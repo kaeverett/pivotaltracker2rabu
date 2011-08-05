@@ -1,0 +1,18 @@
+Burndown charts, better predictions, "what if" scenarios for pivotal tracker using a nifty new service, http://www.teamrabu.com/ by James Shore and Diana Larsen. 
+
+The current Rabu tool takes a simple json format describing iterations, velocity, remaining, history and provides great looking html burndown.
+I've been using it manually with my pivotal project.  One of the few issues I've had with pivotaltracker is it's lack of support for epic stories.  I've found tagging stories to understand epics is tedious.  The simplest approach so far is to organize features into milestones (releases).  That aggregate view seems to work well with rabu. 
+
+TODO:
+ - DONE: use API to get token 
+ - DONE: use API to get iterations 
+ - DONE: parse stories, iterations
+ - API error handling 
+ - current rabu iteration:
+ 	- tally up size of each milestone
+	- export to rabu json 
+	
+- past rabu iterations:
+	- download done
+	- tally up size of each iteration
+	- export rabu json 
