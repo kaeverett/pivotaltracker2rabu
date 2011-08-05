@@ -9,8 +9,18 @@ class Pivotal2Rabu
     # </token>  
     def get_token(user, pass)
       response = `curl -u #{user}:#{pass} -X GET https://www.pivotaltracker.com/services/v3/tokens/active`
-      doc = Hpricot(response).at('token') 
-      token = doc.at('guid').innerHTML
+      token = nil
+      if response.include? 'Access denied'
+        p "unable to get token from pivotaltracker: #{response}"
+        exit false
+      end
+      begin
+        doc = Hpricot(response).at('token') 
+        token = doc.at('guid').innerHTML
+      rescue StandardErrror => e
+        fail_gracefully e, response, "get pivotaltacker token.  verify user/password"
+      end
+      token
     end
   
     def get_backlog(token, project)
@@ -25,8 +35,12 @@ class Pivotal2Rabu
     def get_iterations(token, project, interations, limit = false)
       limit_arg = limit ? "?limit=5" : ""
       response = `curl -H "X-TrackerToken: #{token}" -X GET http://www.pivotaltracker.com/services/v3/projects/#{project}/iterations/#{interations}#{limit_arg}`
-      doc = Hpricot(response).at('iterations') 
-      parse_iterations(doc)
+      begin
+        doc = Hpricot(response).at('iterations') 
+        parse_iterations(doc)
+      rescue StandardError => e
+        fail_gracefully e, response, "get pivotaltracker iterations. verify project id"
+      end
     end
     
     def parse_iterations(doc)
@@ -70,6 +84,15 @@ class Pivotal2Rabu
       min = times[1]
       sec = times[2]
     Time.mktime yr, mon, dy, hr, min, sec
+  end
+
+  private 
+  
+  def fail_gracefully(stderr, response, action)
+    p "unable to #{action}: #{response}"
+    # p stderr.message  
+    # p stderr.backtrace.inspect
+    exit false
   end
 end
 
