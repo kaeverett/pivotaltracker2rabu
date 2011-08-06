@@ -7,7 +7,7 @@ TODO:
  - DONE: use API to get token 
  - DONE: use API to get iterations 
  - DONE: parse stories, iterations
- - API error handling 
+ - DONE: API error handling 
  - current rabu iteration:
  	- tally up size of each milestone
 	- export to rabu json 
