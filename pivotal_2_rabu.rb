@@ -35,12 +35,14 @@ class Pivotal2Rabu
     def get_iterations(token, project, interations, limit = false)
       limit_arg = limit ? "?limit=5" : ""
       response = `curl -H "X-TrackerToken: #{token}" -X GET http://www.pivotaltracker.com/services/v3/projects/#{project}/iterations/#{interations}#{limit_arg}`
+      iterations = nil
       begin
         doc = Hpricot(response).at('iterations') 
-        parse_iterations(doc)
+        iterations = parse_iterations(doc)
       rescue StandardError => e
         fail_gracefully e, response, "get pivotaltracker iterations. verify project id"
       end
+      iterations
     end
     
     def parse_iterations(doc)
@@ -54,6 +56,7 @@ class Pivotal2Rabu
         }
         iterations << iteration
       end
+      iterations
     end
       
     def parse_stories(doc)
@@ -62,11 +65,11 @@ class Pivotal2Rabu
         story = {
           :story_type => s.at('story_type').innerHTML,
           :url => s.at('url').innerHTML,
-          # :estimate => s.at('estimate').innerHTML if s.at('estimate')
-          # :owned_by => s.at('owned_by').innerHTML if s.at('owned_by')
           :created_at => get_time(s.at('created_at').innerHTML),
           :updated_at => get_time(s.at('updated_at').innerHTML)          
         }
+        story[:estimate] = s.at('estimate').innerHTML if s.at('estimate')
+        story[:owned_by] = s.at('owned_by').innerHTML if s.at('owned_by')
         stories << story
       end
       stories
@@ -74,15 +77,20 @@ class Pivotal2Rabu
     
     # given 2010/07/28 15:14:25 PDT return Time
     def get_time(date_string)
-      s1 = date_string.split '/'
-      yr = s1[0]
-      mon = s1[1]
-      s2 = s1[2].split ' '  # 28 15:14:25 PDT
-      dy = s2[0]
-      times = s2[1].split ':'
-      hr = times[0]
-      min = times[1]
-      sec = times[2]
+      begin
+        s1 = date_string.split '/'
+        yr = s1[0]
+        mon = s1[1]
+        s2 = s1[2].split ' '  # 28 15:14:25 PDT
+        dy = s2[0]
+        times = s2[1].split ':'
+        hr = times[0]
+        min = times[1]
+        sec = times[2]
+      rescue StandardError => e
+        p "invalid time format: #{date_string}. ignoring"
+        return nil
+      end
     Time.mktime yr, mon, dy, hr, min, sec
   end
 
@@ -96,10 +104,10 @@ class Pivotal2Rabu
   end
 end
 
-p2r = Pivotal2Rabu.new
-user = ARGV[0]
-pass = ARGV[1]
-project = ARGV[2]
-token = p2r.get_token user,pass
-iterations = p2r.get_backlog(token, project)
-p iterations.inspect
+# p2r = Pivotal2Rabu.new
+# user = ARGV[0]
+# pass = ARGV[1]
+# project = ARGV[2]
+# token = p2r.get_token user,pass
+# iterations = p2r.get_backlog(token, project)
+# p iterations.inspect
