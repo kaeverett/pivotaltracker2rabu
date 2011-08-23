@@ -1,6 +1,6 @@
 require 'pivotal_2_rabu'
 
-describe Pivotal2Rabu, "#pivotal parsing" do
+describe PivotalAdapter, "#pivotal parsing" do
   it "parses pivotal valid timestamp format" do
     p2r = Pivotal2Rabu.new
     t = p2r.get_time '2010/07/28 15:14:25 PDT'
@@ -91,8 +91,6 @@ describe Pivotal2Rabu, "#pivotal parsing" do
     story[:estimate].should == nil
     story[:owned_by].should == 'Mack'
   end
-  
-  
 
 end
   
