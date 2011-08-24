@@ -1,9 +1,6 @@
+require 'rubygems'
+require 'hpricot'
 module PivotalAdapter
-    # <?xml version='1.0' encoding='UTF-8'?>
-    # <token>
-    #   <guid>2c71bec27843c1d84b3bdd547f3</guid>
-    #   <id type="integer">1</id>
-    # </token>  
     def get_token(user, pass)
       response = `curl -u #{user}:#{pass} -X GET https://www.pivotaltracker.com/services/v3/tokens/active`
       token = nil
@@ -29,7 +26,7 @@ module PivotalAdapter
     end
 
     # iterations = backlog | done | current
-    def get_iterations(token, project, interations, limit = true)
+    def get_iterations(token, project, interations, limit = false)
       limit_arg = limit ? "?limit=5" : ""
       response = `curl -H "X-TrackerToken: #{token}" -X GET http://www.pivotaltracker.com/services/v3/projects/#{project}/iterations/#{interations}#{limit_arg}`
       iterations = nil
@@ -63,8 +60,9 @@ module PivotalAdapter
         story = {
           :story_type => s.at('story_type').innerHTML,
           :url => s.at('url').innerHTML,
+          :name => s.at('name').innerHTML,
           :created_at => get_time(s.at('created_at').innerHTML),
-          :updated_at => get_time(s.at('updated_at').innerHTML)          
+          :updated_at => get_time(s.at('updated_at').innerHTML)
         }
         story[:estimate] = s.at('estimate').innerHTML if s.at('estimate')
         story[:owned_by] = s.at('owned_by').innerHTML if s.at('owned_by')

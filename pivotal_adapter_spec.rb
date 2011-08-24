@@ -51,7 +51,8 @@ describe PivotalAdapter, "#pivotal parsing" do
                               <url>http://www.pivotaltracker.com/story/show/13395</url>
                               <owned_by>Mack</owned_by>
                               <current_state>unstarted</current_state>
-                              <description>*really* dislike the ..</name>
+                              <name>another story ..</name>
+                              <description>*really* dislike the ..</description>
                               <requested_by>Mack</requested_by>
                               <created_at type='datetime'>2011/05/13 17:13:23 PDT</created_at>
                               <updated_at type='datetime'>2011/06/09 00:02:18 PDT</updated_at>
@@ -65,7 +66,7 @@ describe PivotalAdapter, "#pivotal parsing" do
   doc = Hpricot(valid_iterations).at('iterations') 
   iterations = p2r.parse_iterations(doc)
   
-  it "parses iterations attribues" do
+  it "parses iterations attributes" do
     iterations.size.should == 1    
     iterations.first[:number].should == '29'
     iterations.first[:start].should ==  Time.mktime(2011, 8, 15, 0, 0, 0) 
@@ -90,6 +91,11 @@ describe PivotalAdapter, "#pivotal parsing" do
     story[:updated_at].should == Time.mktime(2011, 6, 9, 0, 2, 18) 
     story[:estimate].should == nil
     story[:owned_by].should == 'Mack'
+  end
+
+  it "parses the name" do
+    story = iterations.first[:stories].last
+    story[:name].should_not == nil
   end
 
 end
