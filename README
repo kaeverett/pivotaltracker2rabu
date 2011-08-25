@@ -14,11 +14,14 @@ That aggregate view seems to work well with rabu.
 * download rabu.zip from http://www.teamrabu.com/welcome.html
 * unzip rabu.jar from archive
 
+NOTE: the API integration requires curl to be in your PATH
+
 == Using
 * add releases to your pivotaltracker "done" and "backlog" to group the features
-* mark features in the backlog out of scope with a release named "excluded"
-* ruby p2r.rb your_id your_pass your_pivotal_traker_project_id > project.rabu
-* java -jar rabu.jar < estimates.rabu > projection.html
+* mark features in the backlog as out of scope with a single release named "excluded"
+
+ ruby p2r.rb your_id your_pass your_pivotal_traker_project_id > project.rabu
+ java -jar rabu.jar < estimates.rabu > projection.html
 
 == Notes
 Velocity is an average of work completed for the last 3 iterations.
