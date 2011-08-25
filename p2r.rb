@@ -4,5 +4,4 @@ user = ARGV[0]
 pass = ARGV[1]
 project = ARGV[2]
 token = p2r.get_token user,pass
-rabu = p2r.past_2_rabu(token, project)
-p rabu.inspect
+puts p2r.convert(token, project)

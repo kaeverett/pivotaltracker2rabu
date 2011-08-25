@@ -2,7 +2,7 @@ module RabuAdapter
     def convert_2_rabu(done_pivotal_iterations, backlog_pivotal_iterations)
       rabu = history_2_rabu(done_pivotal_iterations, backlog_pivotal_iterations)
       rabu = add_milestones_2_rabu(rabu, done_pivotal_iterations, backlog_pivotal_iterations)
-      rabu
+      remove_completed_added_attributes(rabu)
     end
 
     def history_2_rabu(done_pivotal_iterations, backlog_pivotal_iterations)
@@ -84,19 +84,15 @@ module RabuAdapter
         # remove the last unknown milestone.  that's completed scope
         cm.delete_at(cm.size - 1)
         fm = milestones(backlog_pivotal_iterations, false)
-        # put 3 out of scope if there are enough milestones for "what if" scoping
-        out_of_scope = []
-        if fm.size > 3
-          out_of_scope = fm[(fm.size - 3)..(fm.size - 1)]
-          fm = fm[0..(fm.size - 4)]
-        end
-        # TODO get current iteration info
-        started = Time.now
-        length = 14
-        velocity = 84
+        fm, out_of_scope = pull_everything_after_excluded_out_of_scope(fm)
+        # pull current iteration info from pivotal data
+        start = backlog_pivotal_iterations.first[:start]
+        finish = backlog_pivotal_iterations.first[:finish]
+        length = length_of_iteration_in_days(start, finish)
+        velocity = rabu[:iterations].last[:velocity]
         current_iteration =
           {
-            :started => started,
+            :started => rabu_time_format(start),
             :length => length,
             :velocity => velocity,
             :riskMultipliers => [1, 1.2, 1.4],
@@ -106,6 +102,30 @@ module RabuAdapter
       # put current_iteration at top of rabu iterations
       rabu[:iterations].insert(0, current_iteration)
       rabu
+    end
+
+    def pull_everything_after_excluded_out_of_scope(scope)
+      included = []
+      excluded = []
+      exclude = false
+      excluded_estimate = 0
+      scope.each do |s|
+        if s[0] == 'excluded'
+          exclude = true
+          excluded_estimate = s[1]
+          next
+        end
+        included << s unless exclude
+        if exclude && excluded_estimate > 0
+          s[1] += excluded_estimate
+          excluded_estimate = 0
+        end
+        excluded << s if exclude
+      end
+      if excluded_estimate > 0
+        excluded << ["excluded", excluded_estimate]
+      end
+      return included, excluded
     end
 
     def milestones(done, zero_estimate = true)
@@ -122,8 +142,20 @@ module RabuAdapter
       end
       m
     end
+
+    def remove_completed_added_attributes(rabu)
+      rabu[:iterations].each do |i|
+        pruned = []
+        i[:included].each do |s|
+          pruned << s  if s[0] != "completed scope" && s[0] != "added scope"
+        end
+        i[:included] = pruned
+      end
+      rabu
+    end
     
     def length_of_iteration_in_days(start,finish)
+      return -1 unless start && finish
       Integer ((finish - start) / 60 / 60 / 24)
     end
     

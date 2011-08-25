@@ -1,18 +1,25 @@
-Burndown charts, better predictions, "what if" scenarios for pivotal tracker using a nifty new service, http://www.teamrabu.com/ by James Shore and Diana Larsen. 
+Burndown charts, better predictions, "what if" scenarios for pivotal tracker using a nifty new service, by James Shore and Diana Larsen: http://www.teamrabu.com/
 
 The current Rabu tool takes a simple json format describing iterations, velocity, remaining, history and provides great looking html burndown.
-I've been using it manually with my pivotal project.  One of the few issues I've had with pivotaltracker is it's lack of support for epic stories.  Tagging stories to understand epics is tedious.  The simplest approach so far is to organize features into milestones (releases).  That aggregate view seems to work well with rabu. 
+I've been using it manually with my pivotal project.
 
-TODO:
- - DONE: use API to get token 
- - DONE: use API to get iterations 
- - DONE: parse stories, iterations
- - DONE: API error handling 
- - current rabu iteration:
- 	- tally up size of each milestone
-	- export to rabu json 
-	
-- past rabu iterations:
-	- download done
-	- tally up size of each iteration
-	- export rabu json 
+One of the few issues I've had with pivotaltracker is it's lack of support for epic stories.
+Tagging stories to understand epics breakdown is tedious.  The simplest approach so far is to organize features into milestones (releases).
+That aggregate view seems to work well with rabu.
+
+== Installing
+* gem install json
+* gem install hpricot
+* git clone git@github.com:kaeverett/pivotaltracker2rabu.git
+* download rabu.zip from http://www.teamrabu.com/welcome.html
+* unzip rabu.jar from archive
+
+== Using
+* add releases to your pivotaltracker "done" and "backlog" to group the features
+* mark features in the backlog out of scope with a release named "excluded"
+* ruby p2r.rb your_id your_pass your_pivotal_traker_project_id > project.rabu
+* java -jar rabu.jar < estimates.rabu > projection.html
+
+== Notes
+Velocity is an average of work completed for the last 3 iterations.
+Not sure what rabu expects.  More realistically, it should be "completed - scoped added".

@@ -240,7 +240,29 @@ describe RabuAdapter, "#rabu parsing" do
 
 
 
-  it "splits milestones between included/excluded if there are more than 3" do
+  it "marks everything out of scope after the excluded milestone" do
+    p2r = Pivotal2Rabu.new
+    included = [["m1", 20], ["m2", 30], ["excluded", 0], ["m3", 20], ["m4", 40]]
+    in_scope, out_of_scope = p2r.pull_everything_after_excluded_out_of_scope(included)
+    in_scope.should == [["m1", 20], ["m2", 30]]
+    out_of_scope.should == [["m3", 20], ["m4", 40]]
+  end
+
+  it "scope attributed to an excluded release is added to next milestone" do
+    p2r = Pivotal2Rabu.new
+    included = [["m1", 20], ["m2", 30], ["excluded", 10], ["m3", 20], ["m4", 40]]
+    in_scope, out_of_scope = p2r.pull_everything_after_excluded_out_of_scope(included)
+    out_of_scope.should == [["m3", 30], ["m4", 40]]
+  end
+
+  it "leaves an excluded milestone estimate if there are none after" do
+    p2r = Pivotal2Rabu.new
+    included = [["m1", 20], ["m2", 30], ["excluded", 10]]
+    in_scope, out_of_scope = p2r.pull_everything_after_excluded_out_of_scope(included)
+    out_of_scope.should == [["excluded", 10]]
+  end
+
+  it "sets current iteration attributes" do
     pivotal_iterations << { :number=>'32',
                             :start=>now - (42 * days),
                             :finish=>now - (28 * days),
@@ -256,7 +278,22 @@ describe RabuAdapter, "#rabu parsing" do
         }
     p2r = Pivotal2Rabu.new
     rabu = p2r.add_milestones_2_rabu(rabu, done, pivotal_iterations)
-    rabu[:iterations].first[:included].should == [["m1a", 0], ["m2a", 0], ["m1", 18]]
-    rabu[:iterations].first[:excluded].should == [["m2", 17], ["m3", 5], ["unnamed", 2]]
+    rabu[:iterations].last[:started].should == '18 Jul 2011'
+    rabu[:iterations].last[:length].should == 14
+    rabu[:iterations].last[:velocity].should == 29
   end
+
+  it "removes completed and added attributes from rabu scope" do
+    p2r = Pivotal2Rabu.new
+    rabu =
+        { :updated=>"23 Aug 2011", :name=>"pivotal project", :iterations=>
+           [{:velocity=>38, :length=>14, :included=>[["remaining scope", 20], ["added scope", 11], ["completed scope", 44]], :started=>"01 Aug 2011"},
+            {:velocity=>29, :length=>14, :included=>[["remaining scope", 35], ["added scope", 39], ["completed scope", 89]], :started=>"18 Jul 2011"}]
+        }
+    rabu = p2r.remove_completed_added_attributes(rabu)
+    rabu[:iterations].first[:included].should == [["remaining scope", 20]]
+    rabu[:iterations].last[:included].should == [["remaining scope", 35]]
+  end
+
+
 end

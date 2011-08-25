@@ -29,9 +29,17 @@ module PivotalAdapter
     def get_iterations(token, project, interations, limit = false)
       limit_arg = limit ? "?limit=5" : ""
       response = `curl -H "X-TrackerToken: #{token}" -X GET http://www.pivotaltracker.com/services/v3/projects/#{project}/iterations/#{interations}#{limit_arg}`
+      if response == ""
+        p "unable to get #{interations} from pivotaltracker.  response blank"
+        exit false
+      end
+      if response.include? 'Access denied'
+        p "unable to get token from pivotaltracker: #{response}"
+        exit false
+      end
       iterations = nil
       begin
-        doc = Hpricot(response).at('iterations') 
+        doc = Hpricot(response).at('iterations')
         iterations = parse_iterations(doc)
       rescue StandardError => e
         fail_gracefully e, response, "get pivotaltracker iterations. verify project id"
@@ -42,7 +50,7 @@ module PivotalAdapter
     def parse_iterations(doc)
       rabu = {}
       iterations = []
-      doc.search('iteration').each do |d| 
+      doc.search('iteration').each do |d|
         iteration = {
           :number => d.at('number').innerHTML,
           :start => get_time(d.at('start').innerHTML),
@@ -92,8 +100,8 @@ module PivotalAdapter
 
     def fail_gracefully(stderr, response, action)
       p "unable to #{action}: #{response}"
-      # p stderr.message  
-      # p stderr.backtrace.inspect
+      p stderr.message
+      p stderr.backtrace.inspect
       exit false
     end
 end
