@@ -3,7 +3,6 @@ require 'rabu_adapter'
 require 'json'
 
 # TODO
-# - write readme
 # - export scope added
 
 class Pivotal2Rabu
