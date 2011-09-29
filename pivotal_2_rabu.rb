@@ -2,9 +2,6 @@ require 'pivotal_adapter'
 require 'rabu_adapter'
 require 'json'
 
-# TODO
-# - export scope added
-
 class Pivotal2Rabu
   include PivotalAdapter
   include RabuAdapter  

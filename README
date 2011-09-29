@@ -3,9 +3,6 @@ Burndown charts, better predictions, "what if" scenarios for pivotal tracker usi
 The current Rabu tool takes a simple json format describing iterations, velocity, remaining, history and provides great looking html burndown.
 I've been using it manually with my pivotal project.
 
-One of the few issues I've had with pivotaltracker is it's lack of support for epic stories.
-Tagging stories to understand epics breakdown is tedious.  The simplest approach so far is to organize features into milestones (releases).
-That aggregate view seems to work well with rabu.
 
 == Installing
 * gem install json
@@ -26,3 +23,16 @@ NOTE: the API integration requires curl to be in your PATH
 == Notes
 Velocity is an average of work completed for the last 3 iterations.
 Not sure what rabu expects.  More realistically, it should be "completed - scoped added".
+
+== Scope change report
+Progress in pivotal can be deceiving.  It only shows work complete.   This pivotal integration helps get a handle on how much scope is added and what your true velocity is.
+
+usage:  ruby pivotal_scope_change.rb pivotal_username password pivotal_project_number > scope_change.csv
+
+per sprint, tallys  
+ velocity: completed - added	
+ remaining: all scope remaining before the release named "excluded" 
+ added: stories created during sprint 	 
+ completed: stories accepted during the sprint.  completed bugs/features size broken out
+ stories added: list of stories added <size>:<state>:<name>
+

@@ -89,7 +89,7 @@ module RabuAdapter
         start = backlog_pivotal_iterations.first[:start]
         finish = backlog_pivotal_iterations.first[:finish]
         length = length_of_iteration_in_days(start, finish)
-        velocity = rabu[:iterations].last[:velocity]
+        velocity = $current_velocity || rabu[:iterations].last[:velocity]
         current_iteration =
           {
             :started => rabu_time_format(start),
@@ -134,7 +134,8 @@ module RabuAdapter
         iterations[:stories].each do |s|
           m.last[1] += s[:estimate].to_i if s[:story_type] != 'release' && s[:estimate] && s[:estimate].to_i
           if s[:story_type] == 'release'
-            m.last[0] = s[:name]
+            m.last[0] = "#{s[:name]}:#{m.last[1]}" unless m.last[1] == 0 || s[:name] == 'excluded'
+            m.last[0] = "#{s[:name]}" if m.last[1] == 0 || s[:name] == 'excluded'
             m.last[1] = 0 if zero_estimate
             m << ['unnamed', 0]
           end

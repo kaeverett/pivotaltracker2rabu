@@ -18,11 +18,17 @@ module PivotalAdapter
     end        
 
     def get_backlog(token, project)
-      iterations = get_iterations(token, project, 'backlog')
+      current = get_iterations(token, project, 'current')
+      backlog = get_iterations(token, project, 'backlog')
+      current + backlog
     end
 
     def get_done(token, project)
       iterations = get_iterations(token, project, 'done')
+    end
+
+    def get_current(token, project)
+      iterations = get_iterations(token, project, 'current')
     end
 
     # iterations = backlog | done | current
@@ -65,6 +71,7 @@ module PivotalAdapter
     def parse_stories(doc)
       stories = []
       doc.search('story').each do |s|
+        status = 
         story = {
           :story_type => s.at('story_type').innerHTML,
           :url => s.at('url').innerHTML,
@@ -72,6 +79,7 @@ module PivotalAdapter
           :created_at => get_time(s.at('created_at').innerHTML),
           :updated_at => get_time(s.at('updated_at').innerHTML)
         }
+        story[:state] = s.at('current_state').innerHTML if s.at('current_state')
         story[:estimate] = s.at('estimate').innerHTML if s.at('estimate')
         story[:owned_by] = s.at('owned_by').innerHTML if s.at('owned_by')
         stories << story
