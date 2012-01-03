@@ -1,5 +1,5 @@
-require 'pivotal_adapter'
-require 'rabu_adapter'
+require './pivotal_adapter'
+require './rabu_adapter'
 require 'json'
 
 class Pivotal2Rabu
